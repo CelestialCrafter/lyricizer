@@ -9,8 +9,9 @@ rule link
 
 build build/options.o: cc src/options.c
 build build/mpd.o: cc src/mpd.c
-build build/lyrics.o: cc src/lyrics.c
+build build/lyrics_fetch.o: cc src/lyrics_fetch.c
+build build/lyrics_save.o: cc src/lyrics_save.c
 build build/main.o: cc src/main.c
-build build/lyricizer: link build/main.o build/mpd.o build/lyrics.o build/options.o
+build build/lyricizer: link build/main.o build/mpd.o build/lyrics_fetch.o build/lyrics_save.o build/options.o
 
 default build/lyricizer

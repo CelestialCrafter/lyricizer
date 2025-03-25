@@ -15,6 +15,16 @@ void parse_options(options* opts, toml_table_t* table) {
 	if (port.ok) {
 		opts->port = port.u.i;
 	}
+
+	toml_datum_t delay = toml_int_in(table, "request_delay");
+	if (delay.ok) {
+		opts->request_delay = delay.u.i;
+	}
+
+	toml_datum_t instance = toml_int_in(table, "lrclib_instance");
+	if (instance.ok) {
+		opts->lrclib_instance = instance.u.s;
+	}
 }
 
 options* load_options() {
@@ -34,6 +44,9 @@ options* load_options() {
 	}
 
 	options* opts = (options*) calloc(1, sizeof(options));
+	opts->request_delay = 1;
+	opts->lrclib_instance = "https://lrclib.net";
+
 	if (!opts) {
 		fprintf(stderr, "options: out of memory\n");
 		return NULL;

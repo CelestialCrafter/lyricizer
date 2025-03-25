@@ -1,0 +1,5 @@
+# optional
+host = "127.0.0.1"
+
+# optional
+port = 6600
