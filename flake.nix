@@ -4,12 +4,13 @@
     { nixpkgs, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      buildInputs = with pkgs; [
+      nativeBuildInputs = with pkgs; [
         ninja
         clang
         libmpdclient
         curl
         tomlc99
+        json_c
       ];
     in
     {
@@ -17,7 +18,12 @@
         name = "lyricizer";
         src = ./.;
 
-        inherit buildInputs;
+		meta = {
+			homepage = "https://github.com/CelestialCrafter/lyricizer";
+			license = pkgs.lib.licenses.mpl20;
+		};
+
+        inherit nativeBuildInputs;
 
         buildPhase = "ninja";
         installPhase = ''
@@ -27,7 +33,7 @@
       };
 
       devShells.x86_64-linux.default = pkgs.mkShell {
-        packages = buildInputs;
+        packages = nativeBuildInputs;
       };
     };
 }

@@ -1,0 +1,11 @@
+# $HOME/.config/lyricizer.toml
+
+# required
+music_dir = "/home/celestial/Music/"
+
+# optional
+host = "127.0.0.1"
+port = 6600
+request_delay = 1
+lrclib_instance = "https://lrclib.net"
+

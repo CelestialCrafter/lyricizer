@@ -4,5 +4,5 @@
 
 #include "mpd.h"
 
-void fetch_lyrics(CURL* curl, const char* instance, song_info song);
+char* fetch_lyrics(CURL* curl, const char* instance, song_info song);
 

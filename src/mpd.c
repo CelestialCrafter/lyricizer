@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <mpd/client.h>
 
 #include "mpd.h"
@@ -12,7 +14,6 @@ struct mpd_connection* init_mpd(char* host, unsigned short port) {
 
 	if (mpd_connection_get_error(mpd) != MPD_ERROR_SUCCESS) {
 		fprintf(stderr, "mpd: %s\n", mpd_connection_get_error_message(mpd));
-		mpd_connection_free(mpd);
 		return NULL;
 	}
 
@@ -54,16 +55,28 @@ bool fetch_songs(struct mpd_connection* mpd) {
 	return true;
 }
 
-struct mpd_song* next_song(struct mpd_connection* mpd, song_info* song) {
+struct mpd_song* next_song(struct mpd_connection* mpd, char* music_dir, song_info* song) {
 	struct mpd_song* mpd_song = mpd_recv_song(mpd);
 	if (!mpd_song) {
+		fprintf(stderr, "mpd: end of song list\n");
 		return NULL;
 	}
 
 	song->artist = mpd_song_get_tag(mpd_song, MPD_TAG_ARTIST, 0);
 	song->title = mpd_song_get_tag(mpd_song, MPD_TAG_TITLE, 0);
 	song->album = mpd_song_get_tag(mpd_song, MPD_TAG_ALBUM, 0);
-		
+
+	const char* path_end = mpd_song_get_uri(mpd_song);
+	char* full_path = malloc(strlen(music_dir) + strlen(path_end) + 1);
+	if (!full_path) {
+		fprintf(stderr, "mpd: out of memory\n");
+		return NULL;
+	}
+
+	strcpy(full_path, music_dir);
+	strcat(full_path, path_end);
+	song->path = full_path;
+
 	return mpd_song;
 }
 
