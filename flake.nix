@@ -4,36 +4,37 @@
     { nixpkgs, ... }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      nativeBuildInputs = with pkgs; [
-        ninja
-        clang
-        libmpdclient
-        curl
-        tomlc99
-        json_c
+      buildInputs = with pkgs; [
+        pkg-config
+        openssl
       ];
     in
     {
-      packages.x86_64-linux.default = pkgs.stdenv.mkDerivation {
+      packages.x86_64-linux.default = pkgs.rustPlatform.buildRustPackage {
         name = "lyricizer";
-        src = ./.;
+        version = "0.1.0";
+        src = pkgs.lib.cleanSource ./.;
 
-		meta = {
-			homepage = "https://github.com/CelestialCrafter/lyricizer";
-			license = pkgs.lib.licenses.mpl20;
-		};
+        useFetchCargoVendor = true;
+        cargoHash = "sha256-VguFQMi2FEBtEAQj9Ak4UuWUXtjAQk46liAZ29zijFk=";
+        nativeBuildInputs = buildInputs;
+		inherit buildInputs;
 
-        inherit nativeBuildInputs;
-
-        buildPhase = "ninja";
-        installPhase = ''
-          mkdir -p $out/bin
-          cp build/lyricizer $out/bin/lyricizer
-        '';
+        meta = {
+          description = "downloads lyrics for songs in mpd";
+          homepage = "https://github.com/CelestialCrafter/lyricizer";
+          license = pkgs.lib.licenses.mpl20;
+        };
       };
 
       devShells.x86_64-linux.default = pkgs.mkShell {
-        packages = nativeBuildInputs;
+        packages =
+          with pkgs;
+          [
+            rustc
+            cargo
+          ]
+          // buildInputs;
       };
     };
 }
