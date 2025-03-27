@@ -3,7 +3,7 @@ mod options;
 use std::{fmt, fs, path::Path, time::Duration};
 
 use eyre::{Result, eyre};
-use log::{info, warn};
+use log::{info, warn, LevelFilter};
 use mpd_client::{
     Client,
     commands::{Find, TagTypes},
@@ -100,18 +100,24 @@ fn format_lyrics<'a>(song: SimpleSong<'a>, lyrics: Lyrics) -> String {
             .collect(),
     };
 
-    format!(
+    let mut output = format!(
         "[ti:{}]\n[ar:{}]\n[al:{}]\n{}",
         song.title,
         song.artist,
         song.album,
         body.join("\n")
-    )
+    );
+
+    if !output.ends_with('\n') {
+        output += "\n";
+    }
+
+    output
 }
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    pretty_env_logger::init();
+    pretty_env_logger::formatted_builder().filter_level(LevelFilter::Info).init();
 
     let stream = TcpStream::connect(OPTIONS.address.clone()).await?;
     let (mpd, _) = Client::connect(stream).await?;
@@ -138,18 +144,18 @@ async fn main() -> Result<()> {
         let path = OPTIONS.music_dir.join(song.path).with_extension("lrc");
         match fs::exists(&path) {
             Ok(exists) if exists => {
-                info!("lyrics for {song} already exist");
+                info!("lyrics for \"{song}\" already exist");
                 continue;
             }
             Err(err) => {
-                warn!("could not check if lyrics for {song} exist: {err}");
+                warn!("could not check if lyrics for \"{song}\" exist: {err}");
                 continue;
             }
             _ => (),
         }
 
         sleep(Duration::from_secs_f32(OPTIONS.request_delay)).await;
-        info!("downloading lyrics for {song}");
+        info!("downloading lyrics for \"{song}\"");
 
         let lrclib_lyrics = fetch_lyrics(song).await.unwrap_or_else(|err| {
             warn!("{err}, writing empty lyrics");
