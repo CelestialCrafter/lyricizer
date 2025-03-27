@@ -151,23 +151,22 @@ async fn main() -> Result<()> {
         sleep(Duration::from_secs_f32(OPTIONS.request_delay)).await;
         info!("downloading lyrics for {song}");
 
-        let lrclib_lyrics = match fetch_lyrics(song).await {
-            Ok(v) => v,
-            Err(err) => {
-                warn!("{}", err);
-                continue;
+        let lrclib_lyrics = fetch_lyrics(song).await.unwrap_or_else(|err| {
+            warn!("{err}, writing empty lyrics");
+            LrclibLyrics {
+                plain_lyrics: None,
+                synced_lyrics: Some("".to_string()),
             }
-        };
+        });
 
-        let lyrics = if let Some(v) = lrclib_lyrics.into() {
-            v
-        } else {
-            info!("no lyrics found");
-            continue;
-        };
+        let lyrics: Option<Lyrics> = lrclib_lyrics.into();
+        let lyrics = lyrics.unwrap_or_else(|| {
+            info!("no lyrics found, writing empty lyrics");
+            Lyrics::Synced("".to_string())
+        });
 
         if let Err(err) = fs::write(path, format_lyrics(song, lyrics)) {
-            warn!("{}", err);
+            warn!("{err}");
         }
     }
 
